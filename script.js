@@ -7,6 +7,7 @@ import {
   div,
   monke_slider,
   p,
+  eff,
 } from "./solid_monke/solid_monke.js";
 
 let mouse = { x: 0, y: 0 };
@@ -31,6 +32,10 @@ function initialize() {
     0.1,
     100,
   );
+
+  camera.position.z = 90;
+  camera.position.x = 10;
+  camera.position.y = 40;
 
   renderer = new THREE.WebGLRenderer();
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -74,28 +79,26 @@ let image_manager = (folder) => {
     let path = "./assets/" + folder.folder + "/" + file;
     let unit = image_seed(path);
 
-    unit.position.x = i * 1.5 - folder.content.length / 2;
+    unit.position.x = i * 2.5 - folder.content.length / 2;
     scene.add(unit);
 
     return unit;
   });
 
   images = images.slice(0, 10);
-
   return images;
 };
 
-let series = new Array(12).fill(0).map((_, i) => {
+let series = new Array(14).fill(0).map((_, i) => {
   let images = image_manager(data[i]);
   return images;
 });
 
-camera.position.z = 90;
-camera.position.x = 10;
-camera.position.y = 40;
-
 let range = sig(2);
-let diff = sig(Math.PI * 8);
+let diff = sig(0.3);
+let camera_z = sig(90);
+let camera_x = sig(10);
+let camera_y = sig(40);
 
 function animate() {
   requestAnimationFrame(animate);
@@ -111,25 +114,52 @@ function animate() {
         (i + 0.2) * -diff.is(),
         (i + 0.2) * diff.is(),
       );
+
+      image.rotation.y = map_values(
+        mouse.y,
+        0,
+        window.innerWidth,
+        (i / 2 + 0.2) * -diff.is(),
+        (i / 2 + 0.2) * diff.is(),
+      );
+      image.rotation.z = map_values(
+        mouse.x,
+        0,
+        window.innerWidth,
+        (i / 5 + 0.2) * -diff.is(),
+        (i / 5 + 0.2) * diff.is(),
+      );
     });
   });
 }
 
 animate();
 
+const slide = (val, name, [min, max] = [-100, 100]) => {
+  return div(
+    { class: "slide" },
+    p(name, val.is),
+    monke_slider(val, [min, max], { step: 0.01 }),
+  );
+};
+
 let App = () => {
   return div(
     {
-      style: {
-        position: "absolute",
-        top: "0",
-        left: "0",
-      },
+      class: "ui",
     },
-    p("hello"),
-    monke_slider(range, [0.02, 4], { step: 0.01 }),
-    monke_slider(diff, [0.02, 4], { step: 0.01 }),
+
+    slide(diff, "diff : ", [0.04, 5]),
+    slide(camera_x, "camera x : "),
+    slide(camera_y, "camera y : "),
+    slide(camera_z, "camera z : "),
   );
 };
+
+eff(() => {
+  camera.position.z = camera_z.is();
+  camera.position.x = camera_x.is();
+  camera.position.y = camera_y.is();
+});
 
 render(App, document.body);
