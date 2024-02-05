@@ -53,13 +53,16 @@ initialize();
 
 let loader = new THREE.TextureLoader();
 
-let image_seed = (src) => {
+let image_seed = (src, size) => {
   let texture, plane, material, mesh;
 
   texture = loader.load(src, (tex) => {
     let a = tex.image.width / tex.image.height;
-    mesh.scale.y = 5;
-    mesh.scale.x = 5 * a;
+
+    let off = map_values(size, 0, 1, -2, 2.5);
+
+    mesh.scale.y = 5 + off;
+    mesh.scale.x = (5 + off) * a;
   });
 
   plane = new THREE.PlaneGeometry(1, 1);
@@ -74,12 +77,14 @@ let image_seed = (src) => {
 };
 
 let image_manager = (folder) => {
+  let rr = Math.random();
   let images = folder.content.map((file, i) => {
     if (i > 9) return;
     let path = "./assets/" + folder.folder + "/" + file;
-    let unit = image_seed(path);
+    let unit = image_seed(path, rr);
 
-    unit.position.x = i * 2.5 - folder.content.length / 2;
+    let r = Math.random();
+    unit.position.x = i + i * r * 2.5 - folder.content.length / 2;
     scene.add(unit);
 
     return unit;
@@ -115,17 +120,10 @@ function animate() {
         (i + 0.2) * diff.is(),
       );
 
-      image.rotation.y = map_values(
+      image.rotation.z = map_values(
         mouse.y,
         0,
-        window.innerWidth,
-        (i / 2 + 0.2) * -diff.is(),
-        (i / 2 + 0.2) * diff.is(),
-      );
-      image.rotation.z = map_values(
-        mouse.x,
-        0,
-        window.innerWidth,
+        window.innerHeight,
         (i / 5 + 0.2) * -diff.is(),
         (i / 5 + 0.2) * diff.is(),
       );
