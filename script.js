@@ -47,6 +47,8 @@ function initialize() {
 
   const ambientLight = new THREE.AmbientLight(0x404040);
   scene.add(ambientLight);
+
+  renderer.setClearColor(0xffffff, 1);
 }
 
 initialize();
@@ -98,16 +100,20 @@ let series = new Array(14).fill(0).map((_, i) => {
   let images = image_manager(data[i]);
   return images;
 });
+series = series.sort(() => (Math.random() > 0.5 ? 1 : -1));
 
 let range = sig(2);
 let diff = sig(0.3);
 let camera_z = sig(90);
 let camera_x = sig(10);
 let camera_y = sig(40);
+let offset = 0;
 
 function animate() {
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
+
+  offset++;
 
   series.forEach((image_series, y) => {
     image_series.forEach((image, i) => {
@@ -120,13 +126,15 @@ function animate() {
         (i + 0.2) * diff.is(),
       );
 
-      image.rotation.z = map_values(
+      image.position.z = map_values(
         mouse.y,
         0,
         window.innerHeight,
-        (i / 5 + 0.2) * -diff.is(),
-        (i / 5 + 0.2) * diff.is(),
+        (i * 5 + 5) * -diff.is(),
+        (i * 5 + 5) * diff.is(),
       );
+
+      // image.rotation.y = (i * offset) / 1000;
     });
   });
 }
